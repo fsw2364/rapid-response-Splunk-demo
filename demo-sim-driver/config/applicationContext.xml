@@ -1,0 +1,80 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xmlns:util="http://www.springframework.org/schema/util"
+        xsi:schemaLocation="
+      http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+                http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.2.xsd
+      http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd">
+
+   <context:annotation-config />
+
+   <context:component-scan base-package="com.optensity.appsymphony.webservices.execution.websocket" />
+
+        <import resource="classpath*:/applicationContext-licensing.xml" />
+        <import resource="classpath*:/applicationContext-dataaccess.xml" />
+   <import resource="classpath*:/applicationContext-repoclient.xml" />
+        <import resource="classpath*:/applicationContext-execution.xml" />
+
+        <bean
+                class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+                <property name="ignoreUnresolvablePlaceholders" value="true" />
+                <property name="ignoreResourceNotFound" value="true" />
+                <property name="order" value="1" />
+                <property name="locations">
+                        <list>
+                                <value>classpath:applicationContext.properties</value>
+                        </list>
+                </property>
+        </bean>
+
+        <!-- Start WebSocket Config -->
+
+        <!-- List of objects that the custom atmosphere serializer can serialize -->
+        <util:list id="boundClassList" value-type="java.lang.String">
+                <value>com.optensity.appsymphony.webservices.execution.websocket.atmosphere.dto.Response</value>
+                <value>com.optensity.appsymphony.webservices.execution.websocket.atmosphere.dto.DataResponse</value>
+                <value>com.optensity.appsymphony.webservices.execution.websocket.atmosphere.dto.ExecutionEvent</value>
+                <value>com.optensity.appsymphony.core.model.ExecutionStatus</value>
+                <value>com.optensity.appsymphony.core.model.ExecutionResultSet</value>
+      <value>com.optensity.appsymphony.core.model.ExecutionFailure</value>
+        </util:list>
+
+        <bean id="webSocketBroadcastSerializer"
+                class="com.optensity.appsymphony.webservices.execution.websocket.atmosphere.converter.BroadcastSerializer"
+                scope="singleton">
+                <constructor-arg index="0" ref="boundClassList" />
+        </bean>
+
+        <bean id="executionWebSocketResource"
+                class="com.optensity.appsymphony.webservices.execution.websocket.atmosphere.ExecutionWebSocketResource"
+                scope="singleton">
+        </bean>
+
+   <bean
+      class="org.springframework.beans.factory.config.MethodInvokingFactoryBean">
+      <property name="targetClass" value="java.lang.System" />
+      <property name="targetMethod" value="setProperty" />
+      <property name="arguments">
+         <list>
+            <value>jdbc.drivers</value>
+            <value>${jdbc.drivers}</value>
+         </list>
+      </property>
+   </bean>
+
+        <!-- End WebSocket Config -->
+
+        <bean id="callbackClient"
+                        class="com.optensity.appsymphony.services.execlient.mas.MasAsyncCallbackClient"
+                        scope="singleton"
+                        init-method="doCallback">
+                      <constructor-arg index="0" value="${callback.mas.execute:FALSE}"/>
+                      <constructor-arg index="1" value="${callback.mas.url:https://127.0.0.1:8080/execution/execution/async}" />
+                      <constructor-arg index="2" value="${callback.mas.karName:com.optensity:simHeartbeatApp:3.2.6-RELEASE}" />
+                      <constructor-arg index="3" value="${callback.mas.successCode:201}" />
+                      <constructor-arg index="4" value="${callback.mas.maxAttempts:6}" />
+                      <constructor-arg index="5" value="${callback.mas.waitBetweenAttempts:10000}"/>
+                      <constructor-arg index="6" value="${callback.mas.outputPath:/tmp/callBackAppOutput.xml}"/>
+        </bean>
+</beans>

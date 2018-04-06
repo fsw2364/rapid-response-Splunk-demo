@@ -1,0 +1,19 @@
+<dashboard>
+  <label>Price Dashboard</label>
+  <row>
+    <panel>
+      <chart>
+        <title>Splunk price</title>
+        <search>
+          <query>company="Optensity" OR company="marketAggregate" | bucket _time span=30s | timechart  max(price)  as "Market" max(myPrice) as Optensity span=30s</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <refresh>10s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.chart">line</option>
+        <option name="refresh.display">none</option>
+      </chart>
+    </panel>
+  </row>
+</dashboard>

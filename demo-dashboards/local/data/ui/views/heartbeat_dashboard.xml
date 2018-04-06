@@ -1,0 +1,63 @@
+<dashboard>
+  <label>MyWebApp Dashboard</label>
+  <description>This is an example view in add-on TA-rapidresponse</description>
+  <row>
+    <panel>
+      <title>MyWebApp Heartbeat</title>
+      <single>
+        <title>time since last heartbeat</title>
+        <search>
+          <query>sourcetype="rapidresponsesimsource" "heartbeat" | stats max(_time) AS most_recent | eval ElapsedTime=(now()-most_recent) | eval MinutesAgo=(now()-most_recent)/60 | eval stopLight=case(MinutesAgo&lt;=1,"Green", MinutesAgo&gt;1 AND MinutesAgo &lt;=4, "Yellow", MinutesAgo&gt;4, "Red") | convert timeformat="%H:%M:%S" ctime(ElapsedTime)| table MinutesAgo</query>
+          <earliest>0</earliest>
+          <sampleRatio>1</sampleRatio>
+          <refresh>3s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="colorMode">block</option>
+        <option name="numberPrecision">0.00</option>
+        <option name="rangeColors">["0x65a637","0xf7bc38","0xd93f3c"]</option>
+        <option name="rangeValues">[1,3]</option>
+        <option name="refresh.display">none</option>
+        <option name="unit">minutes</option>
+        <option name="useColors">1</option>
+        <option name="useThousandSeparators">0</option>
+      </single>
+    </panel>
+  </row>
+  <row>
+    <panel>
+      <title>App Server Memory</title>
+      <chart>
+        <title>heap</title>
+        <search>
+          <query>sourcetype=jmx host="ec2-54-175-46-86.compute-1.amazonaws.com:8001" jvmDescription="*" mbean_domain="java.lang" mbean_property_type="Memory" | bucket _time span=1m | timechart max(heapMax)  max(heapCommitted)  max(heapUsed) span=1m</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <refresh>10s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisY.maximumNumber">10000000000</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.chart">line</option>
+        <option name="refresh.display">none</option>
+      </chart>
+    </panel>
+    <panel>
+      <title>Host Memory</title>
+      <chart>
+        <title>heap</title>
+        <search>
+          <query>sourcetype=jmx host="ec2-54-175-46-86.compute-1.amazonaws.com:8001"  jvmDescription="*" mbean_domain="java.lang" mbean_property_type="OperatingSystem" | bucket _time span=1m | timechart max(physMem)  max(freePhysMem)  max(committed) span=1m</query>
+          <earliest>-24h@h</earliest>
+          <latest>now</latest>
+          <refresh>10s</refresh>
+          <refreshType>delay</refreshType>
+        </search>
+        <option name="charting.axisY.maximumNumber">10000000000</option>
+        <option name="charting.axisY.minimumNumber">0</option>
+        <option name="charting.chart">line</option>
+        <option name="refresh.display">none</option>
+      </chart>
+    </panel>
+  </row>
+</dashboard>
